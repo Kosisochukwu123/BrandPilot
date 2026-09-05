@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getPoster } from "@/server/actions/poster";
-import { PosterCanvas } from "./poster-canvas";
+// import { PosterCanvas } from "./poster-canvas";
 import { SpotlightCard } from "@/components/dashboard/overview/motion-primitives";
 import { Loader2, Download, RefreshCw, Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -108,19 +108,19 @@ export function PosterResult({
       );
     }
 
-    if (poster.textMode === "OVERLAY" && poster.backgroundUrl) {
-      return (
-        <PosterCanvas
-          posterId={poster.id}
-          backgroundUrl={poster.backgroundUrl}
-          initialHeadline={poster.headline}
-          initialCta={suggestedCta}
-          instagramHandle={instagramHandle}
-          websiteUrl={websiteUrl}
-          brandColors={brandColors}
-        />
-      );
-    }
+    // if (poster.textMode === "OVERLAY" && poster.backgroundUrl) {
+    //   return (
+    //     <PosterCanvas
+    //       posterId={poster.id}
+    //       backgroundUrl={poster.backgroundUrl}
+    //       initialHeadline={poster.headline}
+    //       initialCta={suggestedCta}
+    //       instagramHandle={instagramHandle}
+    //       websiteUrl={websiteUrl}
+    //       brandColors={brandColors}
+    //     />
+    //   );
+    // }
 
     if (poster.status === "READY") {
       return (
