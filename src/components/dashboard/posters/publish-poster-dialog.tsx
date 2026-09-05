@@ -144,7 +144,7 @@ export function PublishPosterDialog({
       const text = [caption, imageUrl].filter(Boolean).join("\n\n");
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
 
-      const newWindow = window.open(whatsappUrl, "_blank", "noopener", "noreferrer");
+      const newWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
 
       if (!newWindow || newWindow.closed) {
         // If popup was blocked, navigate current window
