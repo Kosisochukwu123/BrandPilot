@@ -16,7 +16,8 @@ export function BillingActions({ isPro }: { isPro: boolean }) {
         disabled={isPending}
         onClick={() => {
           if (!confirm("Cancel your Pro subscription? You'll keep access until the current period ends.")) return;
-          // Fixed: Wrapped in an async function and added await
+          
+          // Using a standard function body with curly braces ensures nothing is returned
           startTransition(async () => {
             await cancelSubscription();
           });
@@ -31,7 +32,6 @@ export function BillingActions({ isPro }: { isPro: boolean }) {
     <Button 
       disabled={isPending} 
       onClick={() => {
-        // Fixed: Wrapped in an async function and added await
         startTransition(async () => {
           await startCheckout();
         });
