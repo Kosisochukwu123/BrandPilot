@@ -1,6 +1,7 @@
-// src/app/(auth)/login/page.tsx
+// src/app/login/page.tsx
 "use client";
 
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
@@ -75,7 +76,9 @@ export default function LoginPage() {
           transition={{ duration: 0.4, delay: 0.3 }}
           className="mt-6"
         >
-          <LoginForm />
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-secondary/40" />}>
+            <LoginForm />
+          </Suspense>
         </motion.div>
 
         {/* Footer links */}
