@@ -31,20 +31,26 @@ export function ContentList({ items: initialItems }: { items: ContentItem[] }) {
     return item.group === filter;
   });
 
+  // Fixed: Added async/await wrapper block
   function handleToggleFavorite(id: string) {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, favorited: !i.favorited } : i)));
-    startTransition(() => toggleFavorite(id));
+    startTransition(async () => {
+      await toggleFavorite(id);
+    });
   }
 
+  // Fixed: Added async/await wrapper block
   function handleDelete(id: string) {
     setItems((prev) => prev.filter((i) => i.id !== id));
-    startTransition(() => deleteGeneratedContent(id));
+    startTransition(async () => {
+      await deleteGeneratedContent(id);
+    });
   }
 
   function handleDuplicate(id: string) {
     startTransition(async () => {
       await duplicateContent(id);
-      window.location.reload(); // simplest correct way to reflect the new row without a manual refetch
+      window.location.reload(); 
     });
   }
 
