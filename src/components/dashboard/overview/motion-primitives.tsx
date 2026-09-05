@@ -1,3 +1,4 @@
+// src/components/dashboard/overview/motion-primitives.tsx
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -62,7 +63,7 @@ export function SpotlightCard({
 }) {
     const ref = useRef<HTMLDivElement>(null);
 
-    const onMove = (e: React.MouseEvent<HTMLElement>) => {
+    const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
         const el = ref.current;
         if (!el) return;
         const r = el.getBoundingClientRect();
@@ -74,8 +75,7 @@ export function SpotlightCard({
 
     return (
         <Tag
-            // @ts-expect-error polymorphic ref
-            ref={ref}
+            ref={ref as React.RefObject<any>}
             onMouseMove={onMove}
             onMouseLeave={onLeave}
             style={{ "--lit": 0 } as React.CSSProperties}
