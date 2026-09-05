@@ -154,7 +154,7 @@ export default async function DashboardOverviewPage() {
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {data.suggestions.map((suggestion, index) => (
               <Reveal
-                key={suggestion.id}
+                key={index}
                 delay={index * 80}
                 className="h-full"
               >
