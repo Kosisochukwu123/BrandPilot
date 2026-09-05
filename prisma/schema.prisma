@@ -1,0 +1,401 @@
+// prisma/schema.prisma
+// BrandPilot AI — core data model
+// Design notes:
+// - Channel is its own first-class model (not a generic "socialAccount" blob)
+// because each platform (Instagram, Facebook, X, WhatsApp) has different
+// auth shapes, token lifetimes, and posting constraints. Keeping them
+// separate avoids "generic AI SaaS" nullable-field soup.
+// - ScheduledPost references a Channel, so the dashboard can render one
+// section per platform, each querying its own posts.
+// - GeneratedContent is decoupled from ScheduledPost: content is generated
+// once, and can be scheduled to zero or many channels later.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+  INCOMPLETE
+}
+
+enum ChannelType {
+  INSTAGRAM
+  FACEBOOK
+  X
+  WHATSAPP
+}
+
+enum ChannelStatus {
+  CONNECTED
+  EXPIRED
+  REVOKED
+  ERROR
+}
+
+enum ContentType {
+  INSTAGRAM_CAPTION
+  FACEBOOK_POST
+  LINKEDIN_POST
+  X_POST
+  EMAIL_CAMPAIGN
+  PRODUCT_DESCRIPTION
+  BLOG_IDEA
+  AD_COPY
+  SEO_META_TITLE
+  SEO_META_DESCRIPTION
+  SEO_KEYWORDS
+  WHATSAPP_BROADCAST
+}
+
+enum PostStatus {
+  DRAFT
+  QUEUED
+  PUBLISHED
+  FAILED
+}
+
+enum PosterTextMode {
+  OVERLAY // clean AI background/graphic, headline rendered as real text on top
+  BAKED_IN // AI attempts to render the headline directly into the image
+}
+
+enum PosterStatus {
+  GENERATING
+  READY
+  FAILED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  passwordHash  String? // null when user signs in via Google only
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  isAdmin Boolean @default(false)
+
+  suspended Boolean @default(false)
+
+
+  onboardingDone Boolean  @default(false)
+
+  accounts         Account[] // OAuth accounts for NextAuth (Google login)
+  sessions         Session[]
+  brands           Brand[]
+  generatedContent GeneratedContent[]
+  channels         Channel[]
+  scheduledPosts   ScheduledPost[]
+  posters          Poster[]
+  subscription     Subscription?
+  usage            UsageRecord[]
+
+  activityLogs ActivityLog[]
+
+  @@map("users")
+}
+
+enum ActivityType {
+  WEBSITE_ANALYZED
+  BRAND_BRAIN_UPDATED
+  CONTENT_GENERATED
+  POSTER_GENERATED
+  CONTENT_PUBLISHED
+  CHANNEL_CONNECTED
+}
+
+model ActivityLog {
+  id        String       @id @default(cuid())
+  userId    String
+  type      ActivityType
+  message   String // short human-readable line, e.g. "Instagram Caption generated"
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("activity_logs")
+}
+
+// --- NextAuth required models ---
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// --- Core product models ---
+
+model Brand {
+  id              String   @id @default(cuid())
+  userId          String
+  websiteUrl      String?
+  instagramHandle String?
+  whatsappNumber  String?
+  brandName       String?
+  businessType    String?
+  audience        String?
+  tone            String?
+  keywords        String[] @default([])
+  rawSummary      String? // AI-generated free-text summary used as prompt context
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generatedContent GeneratedContent[]
+
+  reports BrandReport[]
+
+  @@index([userId])
+  @@map("brands")
+}
+
+model BrandReport {
+  id               String   @id @default(cuid())
+  brandId          String
+  score            Int // 0-100
+  scoreExplanation String
+  summary          String
+  audienceRatings  Json // [{ label: string, stars: number }]
+  personality      Json // [{ trait: string, value: number }] value 0-10
+  voiceTags        String[]
+  colors           String[] // hex codes
+  typography       String
+  contentPillars   String[]
+  platformRankings Json // [{ platform: string, stars: number, reason: string }]
+  opportunities    Json // [{ title: string, detail: string }]
+  createdAt        DateTime @default(now())
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId])
+  @@map("brand_reports")
+}
+
+model GeneratedContent {
+  id        String      @id @default(cuid())
+  userId    String
+  brandId   String?
+  type      ContentType
+  prompt    String
+  output    String
+  createdAt DateTime    @default(now())
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brand          Brand?          @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  scheduledPosts ScheduledPost[]
+  posters        Poster[]
+
+  favorited Boolean @default(false)
+
+  @@index([userId, type])
+  @@map("generated_content")
+}
+
+// One row per connected external channel per user.
+// Each platform has different credential shapes, hence separate optional
+// fields rather than a shared "config json" blob that hides schema intent.
+model Channel {
+  id                String        @id @default(cuid())
+  userId            String
+  type              ChannelType
+  status            ChannelStatus @default(CONNECTED)
+  label             String? // e.g. "@brandname" or phone number, shown in UI
+  // OAuth / API credentials (encrypted at rest via app-level encryption, see lib/crypto.ts)
+  accessToken       String?
+  refreshToken      String?
+  tokenExpiresAt    DateTime?
+  externalAccountId String? // IG business account id / FB page id / X user id / WABA phone id
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  recommendations   Json?
+  recommendationsAt DateTime?
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduledPosts ScheduledPost[]
+
+  @@unique([userId, type, externalAccountId])
+  @@index([userId])
+  @@map("channels")
+}
+
+// A single scheduled unit of publishing, tied to exactly one channel.
+// Separate from GeneratedContent so one piece of content can be reused
+// across channels or re-scheduled without duplicating the AI output.
+model ScheduledPost {
+  id           String     @id @default(cuid())
+  userId       String
+  channelId    String
+  contentId    String?
+  body         String // final text/caption actually sent (may be edited from generated content)
+  mediaUrl     String? // Cloudinary/S3 URL for image/video, if any
+  scheduledAt  DateTime
+  status       PostStatus @default(QUEUED)
+  errorMessage String?
+  publishedAt  DateTime?
+  createdAt    DateTime   @default(now())
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  content GeneratedContent? @relation(fields: [contentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, scheduledAt])
+  @@index([channelId, status])
+  @@map("scheduled_posts")
+}
+
+model Poster {
+  id            String         @id @default(cuid())
+  userId        String
+  contentId     String? // the GeneratedContent this poster was built from, if any
+  textMode      PosterTextMode
+  headline      String // the short text shown on the poster (overlay or baked)
+  imagePrompt   String // the compiled prompt actually sent to the image model
+  backgroundUrl String? // Cloudinary URL of the raw AI-generated image
+  finalUrl      String? // Cloudinary URL after overlay compositing (same as backgroundUrl if BAKED_IN)
+  status        PosterStatus   @default(GENERATING)
+  errorMessage  String?
+  createdAt     DateTime       @default(now())
+
+  templateId  String?
+  subheadline String?
+  bullets     String[] @default([])
+  visualStyle String?
+
+  hierarchy       String?
+  imageFocus      String?
+  spacingMood     String?
+  ctaEmphasis     String?
+  decorationHints String[] @default([])
+
+  concept          String?
+  creativeStrategy String?
+  campaignGoal     String?
+  ctaSuggestion    String?
+  imageMood        String?
+
+  batchId             String? // groups variations generated together
+  variationLabel      String? // "Minimal" | "Bold"
+  matchScore          Int? // 0-100, AI's own estimate of brand-fit
+  recommendedPlatform String?
+  engagementLevel     String? // qualitative: "High" | "Medium" | "Low" — never a fabricated precise stat
+  explanationPoints   String[] @default([])
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content GeneratedContent? @relation(fields: [contentId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("posters")
+}
+
+model Subscription {
+  id                       String             @id @default(cuid())
+  userId                   String             @unique
+  paystackCustomerCode     String?            @unique
+  paystackSubscriptionCode String?            @unique
+  authorizationCode        String? // saved card token, used for manual renewal charges if not plan-based
+  plan                     Plan               @default(FREE)
+  status                   SubscriptionStatus @default(ACTIVE)
+  currentPeriodEnd         DateTime?
+  cancelAtPeriodEnd        Boolean            @default(false)
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// Rolling usage counter per user per calendar month, used for free-plan caps.
+model UsageRecord {
+  id              String @id @default(cuid())
+  userId          String
+  periodYearMonth String // e.g. "2026-07"
+  generations     Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, periodYearMonth])
+  @@map("usage_records")
+}
+
+
+enum AssetType {
+  BACKGROUND
+  OBJECT
+  POSTER_REFERENCE
+}
+
+enum AssetSource {
+  LIBRARY   // manually uploaded and approved
+  AI_SEEDED // AI-generated, auto-added to grow the library
+}
+
+model PosterAsset {
+  id           String      @id @default(cuid())
+  type         AssetType
+  imageUrl     String
+  transparent  Boolean     @default(false) // true for OBJECTs meant to composite over any background
+  businessTypes String[]   @default([]) // e.g. ["Local Service Business", "Real Estate"]
+  styleTags    String[]    @default([]) // e.g. ["warm", "minimal", "energetic"]
+  colorTags    String[]    @default([]) // e.g. ["blue", "neutral", "earth-tone"]
+  description  String      // short AI/human description, e.g. "hammer and wood planks on workbench"
+  source       AssetSource @default(LIBRARY)
+  usageCount   Int         @default(0) // tracks popularity, helps future ranking
+  createdAt    DateTime    @default(now())
+
+  @@index([type])
+  @@map("poster_assets")
+}
