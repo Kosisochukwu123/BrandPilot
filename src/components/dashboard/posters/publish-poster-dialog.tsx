@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from "react";
-import { 
-  X, 
-  Loader2, 
-  Share2, 
-  Send, 
-  MessageCircle, 
-  Instagram, 
+import {
+  X,
+  Loader2,
+  Share2,
+  Send,
+  MessageCircle,
+  Instagram,
   Facebook,
   CheckCircle,
   AlertCircle,
@@ -143,9 +143,9 @@ export function PublishPosterDialog({
       // Method 2: WhatsApp URL (Desktop & Fallback)
       const text = [caption, imageUrl].filter(Boolean).join("\n\n");
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-      
+
       const newWindow = window.open(whatsappUrl, "_blank", "noopener", "noreferrer");
-      
+
       if (!newWindow || newWindow.closed) {
         // If popup was blocked, navigate current window
         window.location.href = whatsappUrl;
@@ -162,9 +162,14 @@ export function PublishPosterDialog({
       // Ultimate fallback - just open WhatsApp URL
       const text = [caption, imageUrl].filter(Boolean).join("\n\n");
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-      window.open(whatsappUrl, "_blank", "noopener", "noreferrer");
-      setShareStep('opened');
-      setStatusType('info');
+      const newWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+      if (!newWindow || newWindow.closed) {
+        // Popup was blocked → open in the same tab
+        window.location.href = whatsappUrl;
+      }
+      setShareStep("opened");
+      setStatusType("info");
       setStatus("Opening WhatsApp...");
     } finally {
       setIsSharing(false);
@@ -237,7 +242,7 @@ export function PublishPosterDialog({
           pointerEvents: "auto",
           maxHeight: "100vh",
           transformOrigin: `${animationOrigin.x}px ${animationOrigin.y}px`,
-          animation: open 
+          animation: open
             ? `slideUpFromButton 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`
             : "none",
           opacity: open ? 1 : 0,
@@ -370,9 +375,9 @@ export function PublishPosterDialog({
                   ) : (
                     <MessageCircle className="h-4 w-4" />
                   )}
-                  {isSharing ? "Preparing…" : 
-                   shareStep === 'confirmed' ? "Shared ✓" : 
-                   "Share to WhatsApp"}
+                  {isSharing ? "Preparing…" :
+                    shareStep === 'confirmed' ? "Shared ✓" :
+                      "Share to WhatsApp"}
                 </button>
 
                 {/* Confirmation button - appears after share sheet opens */}
