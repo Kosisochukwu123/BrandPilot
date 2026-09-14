@@ -22,7 +22,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.variable} suppressHydrationWarning>
         <AuthSessionProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider>
             <BrandTransitionProvider>
               {children}
             </BrandTransitionProvider>
