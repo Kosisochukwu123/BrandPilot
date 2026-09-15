@@ -1,40 +1,49 @@
 // src/components/dashboard/brand/onboarding-hero-stack.tsx
-// A fanned card stack, echoing the reference's angled-card motif —
-// each card represents a piece of what the Brand Brain will learn:
-// website, socials, content, and the finished profile on top.
+// The welcome centerpiece: the real hero image up front, with the two
+// path images peeking behind at an angle — this isn't decorative, it's
+// foreshadowing: the person is about to choose between exactly these
+// two paths on the next screen.
 "use client";
 
 import { motion } from "framer-motion";
-import { Globe, Instagram, Sparkles, Fingerprint } from "lucide-react";
-
-const CARDS = [
-  { icon: Globe, label: "Website", rotate: -14, x: -36, delay: 0 },
-  { icon: Instagram, label: "Socials", rotate: 10, x: 34, delay: 0.08 },
-  { icon: Sparkles, label: "Content", rotate: -6, x: -12, delay: 0.16 },
-  { icon: Fingerprint, label: "Brand Brain", rotate: 0, x: 0, delay: 0.24, top: true },
-];
+import Image from "next/image";
 
 export function OnboardingHeroStack() {
   return (
-    <div className="relative mx-auto flex h-40 w-full max-w-[220px] items-center justify-center">
-      {CARDS.map(({ icon: Icon, label, rotate, x, delay, top }) => (
-        <motion.div
-          key={label}
-          initial={{ opacity: 0, y: 24, rotate: 0, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, rotate, scale: 1, x }}
-          transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{ y: -6, transition: { duration: 0.2 } }}
-          className={`absolute flex h-24 w-20 flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-card shadow-lg ${
-            top ? "z-10 shadow-xl ring-1 ring-foreground/10" : "shadow-md"
-          }`}
-          style={{ transformOrigin: "bottom center" }}
-        >
-          <div className={`flex h-8 w-8 items-center justify-center rounded-full ${top ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}>
-            <Icon className="h-4 w-4" />
-          </div>
-          <span className="text-[9px] font-medium text-muted-foreground">{label}</span>
-        </motion.div>
-      ))}
+    <div className="relative mx-auto flex h-56 w-full max-w-[280px] items-center justify-center">
+      {/* Back-left: website path, peeking */}
+      <motion.div
+        initial={{ opacity: 0, x: -20, rotate: 0, scale: 0.85 }}
+        animate={{ opacity: 1, x: -48, rotate: -12, scale: 0.85 }}
+        transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute h-40 w-32 overflow-hidden rounded-2xl border border-border shadow-lg"
+        style={{ transformOrigin: "bottom center" }}
+      >
+        <Image src="/onboarding/path-website.png" alt="" fill className="object-cover" />
+        <div className="absolute inset-0 bg-background/40" />
+      </motion.div>
+
+      {/* Back-right: social path, peeking */}
+      <motion.div
+        initial={{ opacity: 0, x: 20, rotate: 0, scale: 0.85 }}
+        animate={{ opacity: 1, x: 48, rotate: 12, scale: 0.85 }}
+        transition={{ duration: 0.7, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute h-40 w-32 overflow-hidden rounded-2xl border border-border shadow-lg"
+        style={{ transformOrigin: "bottom center" }}
+      >
+        <Image src="/onboarding/path-social.png" alt="" fill className="object-cover" />
+        <div className="absolute inset-0 bg-background/40" />
+      </motion.div>
+
+      {/* Front and center: the real hero */}
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 h-48 w-40 overflow-hidden rounded-3xl border border-border shadow-2xl ring-1 ring-foreground/10"
+      >
+        <Image src="/onboarding/welcome-hero.png" alt="Your Brand Brain" fill className="object-cover" priority />
+      </motion.div>
     </div>
   );
 }

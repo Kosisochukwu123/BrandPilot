@@ -8,28 +8,27 @@ datasource db {
 }
 
 model User {
-  id                  String               @id @default(cuid())
-  name                String?
-  email               String               @unique
-  passwordHash        String?
-  emailVerified       DateTime?
-  image               String?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  isAdmin             Boolean              @default(false)
-  suspended           Boolean              @default(false)
-  onboardingDone      Boolean              @default(false)
-  accounts            Account[]
-  activityLogs        ActivityLog[]
-  brands              Brand[]
-  channels            Channel[]
-  generatedContent    GeneratedContent[]
-  passwordResetTokens PasswordResetToken[]
-  posters             Poster[]
-  scheduledPosts      ScheduledPost[]
-  sessions            Session[]
-  subscription        Subscription?
-  usage               UsageRecord[]
+  id               String             @id @default(cuid())
+  name             String?
+  email            String             @unique
+  passwordHash     String?
+  emailVerified    DateTime?
+  image            String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  isAdmin          Boolean            @default(false)
+  suspended        Boolean            @default(false)
+  onboardingDone   Boolean            @default(false)
+  accounts         Account[]
+  activityLogs     ActivityLog[]
+  brands           Brand[]
+  channels         Channel[]
+  generatedContent GeneratedContent[]
+  posters          Poster[]
+  scheduledPosts   ScheduledPost[]
+  sessions         Session[]
+  subscription     Subscription?
+  usage            UsageRecord[]
 
   @@map("users")
 }
@@ -88,8 +87,6 @@ model Brand {
   id               String             @id @default(cuid())
   userId           String
   websiteUrl       String?
-  instagramHandle  String?
-  whatsappNumber   String?
   brandName        String?
   businessType     String?
   audience         String?
@@ -98,6 +95,8 @@ model Brand {
   rawSummary       String?
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
+  instagramHandle  String?
+  whatsappNumber   String?
   reports          BrandReport[]
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   generatedContent GeneratedContent[]
@@ -200,26 +199,26 @@ model Poster {
   status              PosterStatus      @default(GENERATING)
   errorMessage        String?
   createdAt           DateTime          @default(now())
-  templateId          String?
-  subheadline         String?
+  batchId             String?
+  engagementLevel     String?
+  explanationPoints   String[]          @default([])
+  matchScore          Int?
+  recommendedPlatform String?
+  variationLabel      String?
   bullets             String[]          @default([])
-  visualStyle         String?
+  subheadline         String?
+  templateId          String?
+  ctaEmphasis         String?
+  decorationHints     String[]          @default([])
   hierarchy           String?
   imageFocus          String?
   spacingMood         String?
-  ctaEmphasis         String?
-  decorationHints     String[]          @default([])
+  visualStyle         String?
+  campaignGoal        String?
   concept             String?
   creativeStrategy    String?
-  campaignGoal        String?
   ctaSuggestion       String?
   imageMood           String?
-  batchId             String?
-  variationLabel      String?
-  matchScore          Int?
-  recommendedPlatform String?
-  engagementLevel     String?
-  explanationPoints   String[]          @default([])
   content             GeneratedContent? @relation(fields: [contentId], references: [id])
   user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -230,15 +229,15 @@ model Poster {
 model Subscription {
   id                       String             @id @default(cuid())
   userId                   String             @unique
-  paystackCustomerCode     String?            @unique
-  paystackSubscriptionCode String?            @unique
-  authorizationCode        String?
   plan                     Plan               @default(FREE)
   status                   SubscriptionStatus @default(ACTIVE)
   currentPeriodEnd         DateTime?
   cancelAtPeriodEnd        Boolean            @default(false)
   createdAt                DateTime           @default(now())
   updatedAt                DateTime           @updatedAt
+  authorizationCode        String?
+  paystackCustomerCode     String?            @unique
+  paystackSubscriptionCode String?            @unique
   user                     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
@@ -270,19 +269,6 @@ model PosterAsset {
 
   @@index([type])
   @@map("poster_assets")
-}
-
-model PasswordResetToken {
-  id        String    @id @default(cuid())
-  userId    String
-  token     String    @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("password_reset_tokens")
 }
 
 enum Plan {
