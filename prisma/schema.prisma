@@ -30,6 +30,8 @@ model User {
   subscription     Subscription?
   usage            UsageRecord[]
 
+  passwordResetTokens PasswordResetToken[]
+
   @@map("users")
 }
 
@@ -349,4 +351,18 @@ enum AssetType {
 enum AssetSource {
   LIBRARY
   AI_SEEDED
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
