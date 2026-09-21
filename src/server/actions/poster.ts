@@ -33,6 +33,8 @@ import { loadReferenceImages } from "@/server/services/ai/load-reference-images"
 import type { PosterDesignBlueprint } from "@/lib/types/poster-design-blueprint";
 import { adaptPosterBlueprint } from "@/server/services/poster/adapt-poster-blueprint";
 
+import { choosePosterComposition } from "@/server/services/poster/composition-director";
+
 import {
   findBestBackground,
   seedLibraryFromGeneration,
@@ -969,6 +971,19 @@ export async function generateComposedPoster(input: {
   if (!brand) {
     throw new Error("Brand not found");
   }
+
+  const composition = choosePosterComposition({
+  caption: input.caption,
+
+  assets: {
+    logoImage: input.logoImage,
+    productImage: input.mainImage,
+  },
+
+  details: input.details ?? {},
+});
+
+console.log("POSTER COMPOSITION:", composition);
 
   // const template = await choosePosterTemplate({
   //   caption: input.caption,

@@ -99,55 +99,51 @@ export function adaptPosterBlueprint(
   const hasPrice = hasValue(input.details.price);
   const hasLogo = Boolean(input.assets.logoImage);
 
-  const isContentOnly =
-    !hasProduct &&
-    !hasOffer &&
-    !hasPrice &&
-    !hasLogo;
+  const isContentOnly = !hasProduct && !hasOffer && !hasPrice && !hasLogo;
 
   let elements = availableElements;
 
   if (isContentOnly) {
     elements = availableElements.map((element) => {
-     if (element.type === "headline") {
-  return {
-    ...element,
-    position: {
-      x: 0.07,
-      y: 0.20,
-      w: 0.86,
-      h: 0.22,
-    },
-    style: {
-      ...element.style,
-      fontSize: "hero" as const,
-    },
-  };
-}
+      if (element.type === "headline") {
+        return {
+          ...element,
+          position: {
+            x: 0.07,
+            y: 0.2,
+            w: 0.86,
+            h: 0.22,
+          },
+          style: {
+            ...element.style,
+            fontSize: "hero" as const,
+          },
+        };
+      }
 
-    if (element.type === "subheadline") {
-  return {
-    ...element,
-    position: {
-      x: 0.08,
-      y: 0.45,
-      w: 0.72,
-      h: 0.12,
-    },
-  };
-}
+      if (element.type === "subheadline") {
+        return {
+          ...element,
+          position: {
+            x: 0.08,
+            y: 0.45,
+            w: 0.72,
+            h: 0.12,
+          },
+        };
+      }
 
-    if (element.type === "cta") {
-  return {
-    ...element,
-    position: {
-      x: 0.08,
-      y: 0.68,
-      w: 0.38,
-      h: 0.09,
-    },
-  };
-}
+      if (element.type === "cta") {
+        return {
+          ...element,
+          position: {
+            x: 0.08,
+            y: 0.68,
+            w: 0.38,
+            h: 0.09,
+          },
+        };
+      }
       return element;
     });
   }
