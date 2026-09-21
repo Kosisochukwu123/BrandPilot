@@ -16,7 +16,6 @@ export default {
         email: {},
         password: {},
       },
-
       authorize: async () => null,
     }),
   ],
@@ -24,23 +23,5 @@ export default {
   pages: {
     signIn: "/login",
     error: "/login",
-  },
-
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-
-      return token;
-    },
-
-    async session({ session, token }) {
-      if (session.user && token.id) {
-        (session.user as { id: string }).id = token.id as string;
-      }
-
-      return session;
-    },
   },
 } satisfies NextAuthConfig;

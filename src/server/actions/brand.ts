@@ -26,9 +26,15 @@ export async function analyzeWebsite(
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
 
-   const { success: withinRateLimit } = await safeRateLimit(analysisRateLimit, session.user.id);
+  const { success: withinRateLimit } = await safeRateLimit(
+    analysisRateLimit,
+    session.user.id,
+  );
   if (!withinRateLimit) {
-    return { success: false, error: "Too many analysis requests. Wait a few minutes and try again." };
+    return {
+      success: false,
+      error: "Too many analysis requests. Wait a few minutes and try again.",
+    };
   }
 
   const parsed = analyzeWebsiteSchema.safeParse(input);
@@ -81,7 +87,6 @@ export async function analyzeWebsite(
     );
 
     return { success: true, data: { brandId: brand.id } };
-    
   } catch (err) {
     const message =
       err instanceof ScraperError
@@ -127,6 +132,33 @@ export async function saveBrandPreferences(
       : (existing?.audience ?? null),
     keywords: parsed.data.keywords ?? existing?.keywords ?? [],
   };
+
+
+
+  console.log("SESSION USER:", {
+    id: session.user.id,
+    email: session.user.email,
+  });
+
+  const userById = await db.user.findUnique({
+    where: {
+      id: session.user.id,
+    },
+  });
+
+  const userByEmail = session.user.email
+    ? await db.user.findUnique({
+        where: {
+          email: session.user.email,
+        },
+      })
+    : null;
+
+  console.log("DATABASE USER BY ID:", userById);
+  console.log("DATABASE USER BY EMAIL:", userByEmail);
+
+
+  
 
   if (existing) {
     await db.brand.update({ where: { id: existing.id }, data });

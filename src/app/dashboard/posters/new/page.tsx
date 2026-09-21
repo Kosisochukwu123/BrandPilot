@@ -1,4 +1,5 @@
 // src/app/dashboard/posters/new/page.tsx
+
 import { Suspense } from "react";
 import NewPosterClient from "./new-poster-client";
 

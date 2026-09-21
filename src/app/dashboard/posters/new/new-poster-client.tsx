@@ -6,13 +6,16 @@ import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { POSTER_TEMPLATES } from "@/lib/constants/poster-templates";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { TemplatePreview } from "@/components/dashboard/posters/template-preview";
+// import { cn } from "@/lib/utils";
+// import { TemplatePreview } from "@/components/dashboard/posters/template-preview";
 import { PosterSuccessPanel } from "@/components/dashboard/posters/poster-success-panel";
 import { PosterExplanationCard } from "@/components/dashboard/posters/poster-explanation-card";
 import { PosterNextActions } from "@/components/dashboard/posters/poster-next-actions";
 import { PosterGeneratorForm } from "@/components/dashboard/posters/poster-generator-form";
 import PosterGenerating from "@/components/dashboard/posters/poster-generating";
+
+import { PosterTemplateRenderer } from "@/components/dashboard/posters/poster-template-renderer";
+import type { ComposedPosterResult } from "@/server/actions/poster";
 
 import type { Poster } from "@prisma/client";
 
@@ -27,6 +30,14 @@ export default function NewPosterClient() {
   const [variations, setVariations] = useState<Poster[]>([]);
   const [activeVariation, setActiveVariation] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+  const [generatedPoster, setGeneratedPoster] =
+    useState<ComposedPosterResult | null>(null);
+
+  const [headline, setHeadline] = useState("");
+  const [subheadline, setSubheadline] = useState("");
+  const [cta, setCta] = useState("");
+
   const [brandData, setBrandData] = useState<{
     suggestedCta: string;
     brandName: string | null;
@@ -50,51 +61,49 @@ export default function NewPosterClient() {
 
   // Called once the server action has actually resolved successfully —
   // fetches the finished poster row and moves to the done phase.
-  async function handleGenerated(data: {
-    posterId: string;
-    suggestedCta: string;
-    brandName: string | null;
-    instagramHandle: string | null;
-    websiteUrl: string | null;
-    colors: string[];
-  }) {
-    try {
-      setBrandData({
-        suggestedCta: data.suggestedCta,
-        brandName: data.brandName,
-        instagramHandle: data.instagramHandle,
-        websiteUrl: data.websiteUrl,
-        colors: data.colors,
-      });
+  function handleGenerated(data: ComposedPosterResult) {
+    setGeneratedPoster(data);
 
-      const res = await fetch(`/api/posters/${data.posterId}`);
-      const poster: Poster = await res.json();
+    setHeadline(data.headline);
+    setSubheadline(data.subheadline);
+    setCta(data.cta);
 
-      setVariations([poster]);
-      setActiveVariation(0);
-      setPhase(poster.status === "READY" ? "done" : "error");
+    setBrandData({
+      suggestedCta: data.suggestedCta,
+      brandName: data.brandName,
+      instagramHandle: data.instagramHandle,
+      websiteUrl: data.websiteUrl,
+      colors: data.colors,
+    });
 
-      if (poster.status !== "READY") {
-        setError("Poster failed to generate. Please try again.");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch poster");
-      setPhase("error");
-    }
+    setActiveVariation(0);
+    setPhase("done");
   }
 
+  // function handleDownload() {
+  //   const current = variations[activeVariation];
+  //   if (!current?.finalUrl && !current?.backgroundUrl) return;
+  //   const link = document.createElement("a");
+  //   link.href = current.finalUrl ?? current.backgroundUrl!;
+  //   link.download = `poster-${current.variationLabel}.png`;
+  //   link.click();
+  // }
+
   function handleDownload() {
-    const current = variations[activeVariation];
-    if (!current?.finalUrl && !current?.backgroundUrl) return;
-    const link = document.createElement("a");
-    link.href = current.finalUrl ?? current.backgroundUrl!;
-    link.download = `poster-${current.variationLabel}.png`;
-    link.click();
+    console.warn(
+      "Composed poster export will be connected to the DOM compositor next."
+    );
   }
 
   function handleRegenerate() {
     setPhase("idle");
     setVariations([]);
+    setGeneratedPoster(null);
+
+    setHeadline("");
+    setSubheadline("");
+    setCta("");
+
     setError(null);
   }
 
@@ -132,11 +141,18 @@ export default function NewPosterClient() {
 
   const current = variations[activeVariation];
 
+  const selectedTemplate = generatedPoster
+    ? POSTER_TEMPLATES.find(
+      (template) => template.id === generatedPoster.templateId
+    ) ?? null
+    : null;
+
   return (
     <div>
       <h1 className="text-2xl font-semibold tracking-tight">Create Poster</h1>
 
       <AnimatePresence mode="wait">
+
         {phase === "generating" && (
           <motion.div
             key="generating"
@@ -149,7 +165,7 @@ export default function NewPosterClient() {
           </motion.div>
         )}
 
-        {phase === "done" && current && (
+        {phase === "done" && generatedPoster && selectedTemplate && (
           <motion.div
             key="result"
             initial={{ opacity: 0, scale: 0.97 }}
@@ -157,7 +173,7 @@ export default function NewPosterClient() {
             transition={{ duration: 0.4 }}
             className="mt-6 space-y-6"
           >
-            <div className="flex flex-wrap gap-3">
+            {/* <div className="flex flex-wrap gap-3">
               {variations.map((v, i) => {
                 const tpl =
                   POSTER_TEMPLATES.find((t) => t.id === v.templateId) ??
@@ -184,33 +200,60 @@ export default function NewPosterClient() {
                   </button>
                 );
               })}
-            </div>
+            </div> */}
 
             <div className="grid gap-6 lg:grid-cols-2">
-              <div>
-                {current.status === "READY" && (
-                  <div className="space-y-3">
-                    <div className="overflow-hidden rounded-lg border border-border">
-                      <img
-                        src={current.finalUrl ?? current.backgroundUrl ?? ""}
-                        alt={current.headline || "Poster"}
-                        className="w-full aspect-square object-cover"
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Full designed poster (text is part of the image).
-                    </p>
-                  </div>
-                )}
+              <div className="space-y-3">
+                <div className="overflow-hidden rounded-lg">
+                  <PosterTemplateRenderer
+                    template={selectedTemplate}
+                    backgroundUrl={generatedPoster.backgroundUrl}
+                    brandColors={
+                      generatedPoster.colors.length > 0
+                        ? generatedPoster.colors
+                        : ["#111827", "#F59E0B", "#F8FAFC"]
+                    }
+                    brandName={generatedPoster.brandName}
+                    headline={headline}
+                    subheadline={subheadline}
+                    bullets={generatedPoster.bullets}
+                    cta={cta}
+                    instagramHandle={generatedPoster.instagramHandle}
+                    websiteUrl={generatedPoster.websiteUrl}
+                    logoUrl={generatedPoster.assets.logoImage}
+                    productUrl={generatedPoster.assets.productImage}
+                    details={generatedPoster.details}
+                    onHeadlineChange={setHeadline}
+                    onSubheadlineChange={setSubheadline}
+                    onCtaChange={setCta}
+                    design={generatedPoster.design}
+                  />
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Composed from your brand, content and poster assets.
+                </p>
               </div>
 
               <div className="space-y-4">
+
                 <PosterSuccessPanel
-                  matchScore={current.matchScore ?? 80}
-                  recommendedPlatform={current.recommendedPlatform ?? "Instagram"}
-                  engagementLevel={current.engagementLevel ?? "Medium"}
+                  matchScore={80}
+                  recommendedPlatform="Instagram"
+                  engagementLevel="Medium"
                 />
-                <PosterExplanationCard points={current.explanationPoints} />
+
+                <PosterExplanationCard
+                  points={[
+                    `Template: ${selectedTemplate.name}`,
+                    generatedPoster.design.hierarchy
+                      ? `Hierarchy: ${generatedPoster.design.hierarchy}`
+                      : "Balanced marketing hierarchy",
+                    generatedPoster.design.visualStyle
+                      ? `Visual style: ${generatedPoster.design.visualStyle}`
+                      : "Brand-aligned visual direction",
+                  ]}
+                />
                 <PosterNextActions
                   onDownload={handleDownload}
                   onRegenerate={handleRegenerate}
@@ -221,6 +264,7 @@ export default function NewPosterClient() {
             </div>
           </motion.div>
         )}
+
       </AnimatePresence>
     </div>
   );

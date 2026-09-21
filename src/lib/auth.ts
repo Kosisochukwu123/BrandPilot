@@ -19,9 +19,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   providers: [
-    ...authConfig.providers.filter(
-      (provider) => provider.id !== "credentials"
-    ),
+    ...authConfig.providers.filter((provider) => provider.id !== "credentials"),
 
     Credentials({
       name: "credentials",
@@ -61,10 +59,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const validPassword = await bcrypt.compare(
-          password,
-          user.passwordHash
-        );
+        const validPassword = await bcrypt.compare(password, user.passwordHash);
 
         if (!validPassword) {
           return null;
@@ -81,7 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
 
   callbacks: {
-    ...authConfig.callbacks,
+    // ...authConfig.callbacks,
 
     async signIn({ user }) {
       if (!user.email) {
@@ -94,13 +89,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       });
 
-      // Block suspended existing users
       if (dbUser?.suspended) {
         return false;
       }
 
-      // Allow existing users and new Google users
       return true;
+    },
+
+    async jwt({ token, user }) {
+      if (user?.email) {
+        const dbUser = await db.user.findUnique({
+          where: {
+            email: user.email,
+          },
+        });
+
+        if (dbUser) {
+          token.sub = dbUser.id;
+        }
+      }
+
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
+      }
+
+      return session;
     },
   },
 });

@@ -1,5 +1,7 @@
 // src/lib/constants/poster-templates.ts
 
+import type { PosterDesignBlueprint } from "@/lib/types/poster-design-blueprint";
+
 export type BackgroundMode = "PHOTO" | "COLOR_PANEL" | "GRADIENT" | "SPLIT";
 export type LayoutStyle =
   | "hero"
@@ -19,7 +21,6 @@ export type LayoutStyle =
   | "tech-grid"
   | "event-impact"
   | "sale-burst"
-
   | "graphic-bold"
   | "graphic-split"
   | "graphic-offer"
@@ -53,7 +54,9 @@ export interface PosterTemplate {
   name: string;
   layout: LayoutStyle;
   suitableFor: string[];
+
   backgroundMode: BackgroundMode;
+
   previewUrl?: string;
 
   typography: {
@@ -95,6 +98,15 @@ export interface PosterTemplate {
     cta: SlotPosition;
     footer: SlotPosition;
   };
+
+  /**
+   * Advanced composition instructions.
+   *
+   * Older templates can continue using slots.
+   * Templates with a blueprint can position multiple
+   * independent poster elements.
+   */
+  blueprint?: PosterDesignBlueprint;
 }
 
 export const POSTER_TEMPLATES: PosterTemplate[] = [
@@ -122,11 +134,17 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
       overlay: true,
       overlayOpacity: 0.42,
       focalPoint: "center",
-      subjectHint: "product or lifestyle scene with negative space in lower half",
+      subjectHint:
+        "product or lifestyle scene with negative space in lower half",
     },
     button: { style: "pill", size: "lg" },
     spacing: { padding: 48, gap: 20 },
-    decoration: { gradient: false, border: false, shadow: "soft", cornerRadius: 0 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "soft",
+      cornerRadius: 0,
+    },
     slots: {
       textZone: { x: 0.08, y: 0.52, w: 0.84, align: "left" },
       cta: { x: 0.08, y: 0.82, w: 0.42, align: "left" },
@@ -139,7 +157,11 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     id: "minimal-luxury",
     name: "Minimal Luxury",
     layout: "minimal-luxury",
-    suitableFor: ["Fashion & Apparel", "Beauty & Cosmetics", "E-commerce / Retail"],
+    suitableFor: [
+      "Fashion & Apparel",
+      "Beauty & Cosmetics",
+      "E-commerce / Retail",
+    ],
     backgroundMode: "PHOTO",
     typography: {
       headline: "serif-elegant",
@@ -157,7 +179,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "ghost", size: "md" },
     spacing: { padding: 64, gap: 16 },
-    decoration: { gradient: false, border: false, shadow: "none", cornerRadius: 0 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "none",
+      cornerRadius: 0,
+    },
     slots: {
       textZone: { x: 0.12, y: 0.62, w: 0.76, align: "center" },
       cta: { x: 0.3, y: 0.84, w: 0.4, align: "center" },
@@ -188,7 +215,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "rounded", size: "lg" },
     spacing: { padding: 40, gap: 18 },
-    decoration: { gradient: false, border: false, shadow: "medium", cornerRadius: 16 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "medium",
+      cornerRadius: 16,
+    },
     slots: {
       textZone: { x: 0.08, y: 0.48, w: 0.84, align: "left" },
       cta: { x: 0.08, y: 0.8, w: 0.45, align: "left" },
@@ -284,7 +316,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "pill", size: "md" },
     spacing: { padding: 48, gap: 20 },
-    decoration: { gradient: false, border: true, shadow: "soft", cornerRadius: 24 },
+    decoration: {
+      gradient: false,
+      border: true,
+      shadow: "soft",
+      cornerRadius: 24,
+    },
     slots: {
       textZone: { x: 0.12, y: 0.32, w: 0.76, align: "center" },
       cta: { x: 0.25, y: 0.72, w: 0.5, align: "center" },
@@ -308,7 +345,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "rounded", size: "md" },
     spacing: { padding: 44, gap: 20 },
-    decoration: { gradient: false, border: false, shadow: "medium", cornerRadius: 0 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "medium",
+      cornerRadius: 0,
+    },
     slots: {
       textZone: { x: 0.08, y: 0.3, w: 0.5, align: "left" },
       cta: { x: 0.08, y: 0.78, w: 0.4, align: "left" },
@@ -374,11 +416,17 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
       overlay: true,
       overlayOpacity: 0.5,
       focalPoint: "top",
-      subjectHint: "strong product or lifestyle image with space in lower third",
+      subjectHint:
+        "strong product or lifestyle image with space in lower third",
     },
     button: { style: "pill", size: "md" },
     spacing: { padding: 36, gap: 14 },
-    decoration: { gradient: false, border: false, shadow: "soft", cornerRadius: 0 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "soft",
+      cornerRadius: 0,
+    },
     slots: {
       textZone: { x: 0.08, y: 0.68, w: 0.84, align: "left" },
       cta: { x: 0.08, y: 0.86, w: 0.4, align: "left" },
@@ -409,7 +457,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "rounded", size: "md" },
     spacing: { padding: 40, gap: 16 },
-    decoration: { gradient: false, border: false, shadow: "medium", cornerRadius: 12 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "medium",
+      cornerRadius: 12,
+    },
     slots: {
       textZone: { x: 0.08, y: 0.55, w: 0.84, align: "left" },
       cta: { x: 0.08, y: 0.82, w: 0.48, align: "left" },
@@ -422,7 +475,11 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     id: "product-spotlight",
     name: "Product Spotlight",
     layout: "product-spotlight",
-    suitableFor: ["E-commerce / Retail", "Fashion & Apparel", "Beauty & Cosmetics"],
+    suitableFor: [
+      "E-commerce / Retail",
+      "Fashion & Apparel",
+      "Beauty & Cosmetics",
+    ],
     backgroundMode: "COLOR_PANEL",
     typography: {
       headline: "display",
@@ -445,6 +502,250 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
       cta: { x: 0.25, y: 0.8, w: 0.5, align: "center" },
       footer: { x: 0.1, y: 0.93, w: 0.8, align: "center" },
     },
+
+    blueprint: {
+      version: 1,
+
+      aspectRatio: "4:5",
+
+      templateId: "product-spotlight",
+
+      composition:
+        "Premium product-focused promotional poster with a large hero product, strong headline, promotional offer, price emphasis, CTA, brand logo, contact information and layered decorative graphics.",
+
+      elements: [
+        // ─────────────────────────────────────────────
+        // DECORATIVE BACKGROUND SHAPE
+        // ─────────────────────────────────────────────
+        {
+          id: "background-accent",
+          type: "decorative-shape",
+          position: {
+            x: 0.55,
+            y: -0.05,
+            w: 0.55,
+            h: 0.55,
+          },
+          zIndex: 1,
+          opacity: 0.18,
+          style: {
+            shape: "circle",
+          },
+        },
+
+        // ─────────────────────────────────────────────
+        // BRAND LOGO
+        // ─────────────────────────────────────────────
+        {
+          id: "logo",
+          type: "logo",
+          source: "brand.logo",
+          position: {
+            x: 0.07,
+            y: 0.05,
+            w: 0.18,
+            h: 0.08,
+          },
+          zIndex: 10,
+          style: {
+            objectFit: "contain",
+          },
+        },
+
+        // ─────────────────────────────────────────────
+        // HEADLINE
+        // ─────────────────────────────────────────────
+        {
+          id: "headline",
+          type: "headline",
+          source: "content.headline",
+          position: {
+            x: 0.07,
+            y: 0.17,
+            w: 0.48,
+            h: 0.17,
+          },
+          align: "left",
+          zIndex: 10,
+          style: {
+            fontSize: "hero",
+            fontWeight: "black",
+            fontFamily: "bold-sans",
+          },
+        },
+
+        // ─────────────────────────────────────────────
+        // SUBHEADLINE
+        // ─────────────────────────────────────────────
+        {
+          id: "subheadline",
+          type: "subheadline",
+          source: "content.subheadline",
+          position: {
+            x: 0.07,
+            y: 0.35,
+            w: 0.43,
+            h: 0.1,
+          },
+          align: "left",
+          zIndex: 10,
+          style: {
+            fontSize: "md",
+            fontWeight: "medium",
+            fontFamily: "modern",
+          },
+        },
+
+        // ─────────────────────────────────────────────
+        // HERO PRODUCT
+        // ─────────────────────────────────────────────
+        {
+          id: "hero-product",
+          type: "product",
+          source: "asset.product",
+          position: {
+            x: 0.48,
+            y: 0.14,
+            w: 0.48,
+            h: 0.5,
+          },
+          zIndex: 6,
+          style: {
+            objectFit: "contain",
+            objectPosition: "center",
+          },
+        },
+
+        // ─────────────────────────────────────────────
+        // OFFER BADGE
+        // ─────────────────────────────────────────────
+        {
+          id: "offer",
+          type: "offer",
+          source: "details.offer",
+          position: {
+            x: 0.07,
+            y: 0.5,
+            w: 0.26,
+            h: 0.075,
+          },
+          align: "center",
+          zIndex: 12,
+          style: {
+            fontSize: "sm",
+            fontWeight: "bold",
+            shape: "pill",
+            padding: 10,
+          },
+        },
+
+        // ─────────────────────────────────────────────
+        // PRICE
+        // ─────────────────────────────────────────────
+        {
+          id: "price",
+          type: "price",
+          source: "details.price",
+          position: {
+            x: 0.07,
+            y: 0.6,
+            w: 0.32,
+            h: 0.1,
+          },
+          align: "left",
+          zIndex: 12,
+          style: {
+            fontSize: "2xl",
+            fontWeight: "black",
+            fontFamily: "bold-sans",
+          },
+        },
+
+        // ─────────────────────────────────────────────
+        // CTA
+        // ─────────────────────────────────────────────
+        {
+          id: "cta",
+          type: "cta",
+          source: "content.cta",
+          position: {
+            x: 0.07,
+            y: 0.74,
+            w: 0.31,
+            h: 0.075,
+          },
+          align: "center",
+          zIndex: 12,
+          style: {
+            fontSize: "sm",
+            fontWeight: "bold",
+            shape: "pill",
+            padding: 12,
+            shadow: "soft",
+          },
+        },
+
+        // ─────────────────────────────────────────────
+        // WEBSITE
+        // ─────────────────────────────────────────────
+        {
+          id: "website",
+          type: "website",
+          source: "details.website",
+          position: {
+            x: 0.07,
+            y: 0.9,
+            w: 0.4,
+            h: 0.04,
+          },
+          align: "left",
+          zIndex: 10,
+          style: {
+            fontSize: "xs",
+            fontWeight: "medium",
+          },
+        },
+
+        // ─────────────────────────────────────────────
+        // PHONE
+        // ─────────────────────────────────────────────
+        {
+          id: "phone",
+          type: "phone",
+          source: "details.phone",
+          position: {
+            x: 0.56,
+            y: 0.9,
+            w: 0.37,
+            h: 0.04,
+          },
+          align: "right",
+          zIndex: 10,
+          style: {
+            fontSize: "xs",
+            fontWeight: "medium",
+          },
+        },
+
+        // ─────────────────────────────────────────────
+        // BOTTOM DECORATIVE LINE
+        // ─────────────────────────────────────────────
+        {
+          id: "bottom-accent",
+          type: "decorative-shape",
+          position: {
+            x: 0.07,
+            y: 0.96,
+            w: 0.86,
+            h: 0.008,
+          },
+          zIndex: 8,
+          style: {
+            shape: "line",
+          },
+        },
+      ],
+    },
   },
 
   // ── 12. Editorial ─────────────────────────────────────────────
@@ -452,7 +753,11 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     id: "editorial",
     name: "Editorial",
     layout: "editorial",
-    suitableFor: ["Fashion & Apparel", "Beauty & Cosmetics", "Education / Coaching"],
+    suitableFor: [
+      "Fashion & Apparel",
+      "Beauty & Cosmetics",
+      "Education / Coaching",
+    ],
     backgroundMode: "PHOTO",
     typography: {
       headline: "serif-elegant",
@@ -470,7 +775,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "underline", size: "md" },
     spacing: { padding: 52, gap: 18 },
-    decoration: { gradient: false, border: false, shadow: "none", cornerRadius: 0 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "none",
+      cornerRadius: 0,
+    },
     slots: {
       textZone: { x: 0.08, y: 0.58, w: 0.7, align: "left" },
       cta: { x: 0.08, y: 0.85, w: 0.4, align: "left" },
@@ -483,7 +793,11 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     id: "dark-premium",
     name: "Dark Premium",
     layout: "dark-premium",
-    suitableFor: ["Fashion & Apparel", "Beauty & Cosmetics", "E-commerce / Retail"],
+    suitableFor: [
+      "Fashion & Apparel",
+      "Beauty & Cosmetics",
+      "E-commerce / Retail",
+    ],
     backgroundMode: "PHOTO",
     typography: {
       headline: "serif-elegant",
@@ -501,7 +815,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "ghost", size: "md" },
     spacing: { padding: 56, gap: 18 },
-    decoration: { gradient: false, border: false, shadow: "none", cornerRadius: 0 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "none",
+      cornerRadius: 0,
+    },
     slots: {
       textZone: { x: 0.08, y: 0.5, w: 0.75, align: "left" },
       cta: { x: 0.08, y: 0.82, w: 0.4, align: "left" },
@@ -514,7 +833,11 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     id: "warm-organic",
     name: "Warm Organic",
     layout: "warm-organic",
-    suitableFor: ["Health & Wellness", "Restaurant / Food & Beverage", "Beauty & Cosmetics"],
+    suitableFor: [
+      "Health & Wellness",
+      "Restaurant / Food & Beverage",
+      "Beauty & Cosmetics",
+    ],
     backgroundMode: "PHOTO",
     typography: {
       headline: "handwritten-accent",
@@ -528,11 +851,17 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
       overlay: true,
       overlayOpacity: 0.38,
       focalPoint: "center",
-      subjectHint: "natural textures, plants, warm organic materials, soft light",
+      subjectHint:
+        "natural textures, plants, warm organic materials, soft light",
     },
     button: { style: "rounded", size: "md" },
     spacing: { padding: 48, gap: 20 },
-    decoration: { gradient: false, border: false, shadow: "soft", cornerRadius: 20 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "soft",
+      cornerRadius: 20,
+    },
     slots: {
       textZone: { x: 0.08, y: 0.5, w: 0.8, align: "left" },
       cta: { x: 0.08, y: 0.82, w: 0.42, align: "left" },
@@ -598,7 +927,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "sharp", size: "lg" },
     spacing: { padding: 44, gap: 16 },
-    decoration: { gradient: false, border: false, shadow: "hard", cornerRadius: 4 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "hard",
+      cornerRadius: 4,
+    },
     slots: {
       textZone: { x: 0.1, y: 0.42, w: 0.8, align: "center" },
       cta: { x: 0.25, y: 0.78, w: 0.5, align: "center" },
@@ -611,7 +945,11 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     id: "sale-burst",
     name: "Sale Burst",
     layout: "sale-burst",
-    suitableFor: ["E-commerce / Retail", "Fashion & Apparel", "Beauty & Cosmetics"],
+    suitableFor: [
+      "E-commerce / Retail",
+      "Fashion & Apparel",
+      "Beauty & Cosmetics",
+    ],
     backgroundMode: "COLOR_PANEL",
     typography: {
       headline: "display",
@@ -641,7 +979,11 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     id: "magazine-cover",
     name: "Magazine Cover",
     layout: "magazine",
-    suitableFor: ["Fashion & Apparel", "Beauty & Cosmetics", "Education / Coaching"],
+    suitableFor: [
+      "Fashion & Apparel",
+      "Beauty & Cosmetics",
+      "Education / Coaching",
+    ],
     backgroundMode: "PHOTO",
     typography: {
       headline: "serif-elegant",
@@ -659,7 +1001,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "underline", size: "sm" },
     spacing: { padding: 48, gap: 14 },
-    decoration: { gradient: false, border: false, shadow: "none", cornerRadius: 0 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "none",
+      cornerRadius: 0,
+    },
     slots: {
       textZone: { x: 0.08, y: 0.62, w: 0.65, align: "left" },
       cta: { x: 0.08, y: 0.86, w: 0.35, align: "left" },
@@ -672,7 +1019,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     id: "corporate-trust",
     name: "Corporate Trust",
     layout: "feature-list",
-    suitableFor: ["SaaS / Software", "Real Estate", "Education / Coaching", "Local Service Business"],
+    suitableFor: [
+      "SaaS / Software",
+      "Real Estate",
+      "Education / Coaching",
+      "Local Service Business",
+    ],
     backgroundMode: "COLOR_PANEL",
     typography: {
       headline: "modern",
@@ -683,7 +1035,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "rounded", size: "md" },
     spacing: { padding: 52, gap: 20 },
-    decoration: { gradient: false, border: false, shadow: "soft", cornerRadius: 8 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "soft",
+      cornerRadius: 8,
+    },
     slots: {
       textZone: { x: 0.08, y: 0.28, w: 0.75, align: "left" },
       cta: { x: 0.08, y: 0.78, w: 0.4, align: "left" },
@@ -696,7 +1053,11 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     id: "beauty-soft",
     name: "Beauty Soft",
     layout: "minimal-luxury",
-    suitableFor: ["Beauty & Cosmetics", "Fashion & Apparel", "Health & Wellness"],
+    suitableFor: [
+      "Beauty & Cosmetics",
+      "Fashion & Apparel",
+      "Health & Wellness",
+    ],
     backgroundMode: "PHOTO",
     typography: {
       headline: "serif-elegant",
@@ -714,7 +1075,12 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
     button: { style: "pill", size: "md" },
     spacing: { padding: 60, gap: 16 },
-    decoration: { gradient: false, border: false, shadow: "soft", cornerRadius: 24 },
+    decoration: {
+      gradient: false,
+      border: false,
+      shadow: "soft",
+      cornerRadius: 24,
+    },
     slots: {
       textZone: { x: 0.12, y: 0.58, w: 0.76, align: "center" },
       cta: { x: 0.28, y: 0.82, w: 0.44, align: "center" },
@@ -722,7 +1088,7 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     },
   },
 
-    // ── 21. Graphic Bold (type + color block) ─────────────────────
+  // ── 21. Graphic Bold (type + color block) ─────────────────────
   {
     id: "graphic-bold",
     name: "Graphic Bold",

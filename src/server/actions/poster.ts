@@ -41,7 +41,7 @@ import {
 import { POSTER_TEMPLATES } from "@/lib/constants/poster-templates";
 import type { CompiledPosterContent } from "@/server/services/ai/poster-prompt-builder";
 
-import type { PosterTextMode } from "@prisma/client";
+import { PosterTextMode } from "@prisma/client";
 import { pickPosterReferences } from "../services/poster/pick-poster-references";
 
 const DEFAULT_CTA_BY_TYPE: Record<string, string> = {
@@ -55,6 +55,50 @@ const DEFAULT_CTA_BY_TYPE: Record<string, string> = {
   "Real Estate": "Schedule a Viewing",
   "Education / Coaching": "Enroll Today",
 };
+
+export interface ComposedPosterResult {
+  posterId: string;
+
+  templateId: string;
+
+  backgroundUrl: string | null;
+
+  headline: string;
+  subheadline: string;
+  bullets: string[];
+  cta: string;
+
+  suggestedCta: string;
+  brandName: string | null;
+  instagramHandle: string | null;
+  websiteUrl: string | null;
+  colors: string[];
+
+  design: {
+    visualStyle: string;
+    hierarchy: string;
+    imageFocus: string;
+    spacingMood: string;
+    ctaEmphasis: string;
+    decorationHints: string[];
+  };
+
+  assets: {
+    logoImage: string | null;
+    productImage: string | null;
+  };
+
+  details: {
+    offer?: string;
+    price?: string;
+    date?: string;
+    time?: string;
+    address?: string;
+    phone?: string;
+    website?: string;
+    extra?: string;
+  };
+}
 
 export async function generatePosterVariations(input: {
   caption: string;
@@ -649,14 +693,6 @@ export async function deletePoster(id: string) {
  * Main reference-guided poster generation.
  * Creates a real Poster row and returns batch/poster ids for in-app UI.
  */
-/**
- * Main reference-guided poster generation.
- * Creates a real Poster row and returns batch/poster ids for in-app UI.
- */
-/**
- * Main reference-guided poster generation.
- * Creates a real Poster row and returns batch/poster ids for in-app UI.
- */
 export async function generateReferencePosterProof(input: {
   caption: string;
   contentId?: string;
@@ -749,9 +785,7 @@ export async function generateReferencePosterProof(input: {
         ?.map((p) => ({
           name: p.name,
           role: p.role,
-          image: p.imageBase64
-            ? Buffer.from(p.imageBase64, "base64")
-            : null,
+          image: p.imageBase64 ? Buffer.from(p.imageBase64, "base64") : null,
         }))
         .filter((p) => p.image || p.name || p.role) ?? [];
 
@@ -818,9 +852,7 @@ export async function generateReferencePosterProof(input: {
       keywords: input.keywords,
       size: "1024x1024",
       inputFidelity:
-        hasPersonPhotos || !!input.logoBase64 || hasMainImage
-          ? "high"
-          : "low",
+        hasPersonPhotos || !!input.logoBase64 || hasMainImage ? "high" : "low",
       posterType: input.posterType,
       goal: input.goal,
       mainMessage: input.mainMessage,
@@ -898,4 +930,200 @@ export async function generateReferencePosterProof(input: {
     });
     return { success: false, error: message };
   }
+}
+
+export async function generateComposedPoster(input: {
+  caption: string;
+
+  logoImage?: string | null;
+  mainImage?: string | null;
+
+  details?: {
+    offer?: string;
+    price?: string;
+    date?: string;
+    time?: string;
+    address?: string;
+    phone?: string;
+    website?: string;
+    extra?: string;
+  };
+}): Promise<ComposedPosterResult> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const userId = session.user.id;
+
+  const { brand, report } = await getBrandContext(userId);
+
+  if (!brand) {
+    throw new Error("Brand not found");
+  }
+
+  const template = await choosePosterTemplate({
+    caption: input.caption,
+    brand,
+  });
+
+  const content = await compilePosterContent(
+    input.caption,
+    brand,
+    report,
+    PosterTextMode.OVERLAY,
+    template,
+  );
+
+  let backgroundUrl: string | null = null;
+
+  const existingBackground = await findBestBackground(brand);
+
+  if (existingBackground) {
+    backgroundUrl = existingBackground.imageUrl;
+
+    await db.posterAsset.update({
+      where: {
+        id: existingBackground.id,
+      },
+      data: {
+        usageCount: {
+          increment: 1,
+        },
+      },
+    });
+  }
+
+  if (!backgroundUrl && content.imagePrompt) {
+    const generated = await generatePosterImage({
+      prompt: content.imagePrompt,
+      businessType: brand.businessType,
+      visualStyle: content.visualStyle,
+      imageMood: content.imageMood,
+      hierarchy: content.hierarchy,
+
+      // We'll connect the exact Brand Brain color
+      // fields after this action compiles.
+      colors: [],
+
+      aspectRatio: template.blueprint?.aspectRatio ?? "1:1",
+    });
+
+    // ...rest of action
+
+    backgroundUrl = await uploadBase64Image(
+      generated,
+      `poster-background-${userId}-${Date.now()}`,
+    );
+
+    await seedLibraryFromGeneration(
+      backgroundUrl,
+      brand,
+      [content.visualStyle, content.imageMood].filter(Boolean),
+    );
+  }
+
+  // 5. Store the poster as an editable/composed poster.
+  const poster = await db.poster.create({
+    data: {
+      userId,
+
+      textMode: PosterTextMode.OVERLAY,
+
+      headline: content.headline,
+
+      subheadline: content.subheadline,
+
+      bullets: content.bullets,
+
+      imagePrompt: content.imagePrompt ?? "",
+
+      backgroundUrl,
+
+      status: "READY",
+
+      templateId: template.id,
+
+      concept: content.concept,
+
+      creativeStrategy: content.creativeStrategy,
+
+      visualStyle: content.visualStyle,
+
+      hierarchy: content.hierarchy,
+
+      imageFocus: content.imageFocus,
+
+      spacingMood: content.spacingMood,
+
+      ctaEmphasis: content.ctaEmphasis,
+
+      decorationHints: content.decorationHints,
+
+      ctaSuggestion: content.ctaSuggestion,
+
+      imageMood: content.imageMood,
+
+      campaignGoal: content.campaignGoal,
+
+      matchScore: content.matchScore,
+
+      recommendedPlatform: content.recommendedPlatform,
+
+      engagementLevel: content.engagementLevel,
+
+      explanationPoints: content.explanationPoints,
+    },
+  });
+
+  return {
+    posterId: poster.id,
+
+    templateId: template.id,
+
+    backgroundUrl,
+
+    headline: content.headline,
+
+    subheadline: content.subheadline,
+
+    bullets: content.bullets,
+
+    cta: content.ctaSuggestion,
+
+    suggestedCta: content.ctaSuggestion,
+
+    brandName: brand.brandName ?? null,
+
+    instagramHandle: brand.instagramHandle ?? null,
+
+    websiteUrl: brand.websiteUrl ?? null,
+
+    // Temporary until we connect the exact Brand Brain
+    // color source.
+    colors: [],
+
+    design: {
+      visualStyle: content.visualStyle,
+
+      hierarchy: content.hierarchy,
+
+      imageFocus: content.imageFocus,
+
+      spacingMood: content.spacingMood,
+
+      ctaEmphasis: content.ctaEmphasis,
+
+      decorationHints: content.decorationHints,
+    },
+
+    assets: {
+      logoImage: input.logoImage ?? null,
+
+      productImage: input.mainImage ?? null,
+    },
+
+    details: input.details ?? {},
+  };
 }
