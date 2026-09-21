@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { generateComposedPoster } from "@/server/actions/poster";
+import { generateComposedPoster, type ComposedPosterResult, } from "@/server/actions/poster";
 import { Button } from "@/components/ui/button";
 import {
   PosterDetailForm,
@@ -25,14 +25,6 @@ export type PosterGoal =
   | "awareness"
   | "celebrate";
 
-interface GeneratedPosterData {
-  posterId: string;
-  suggestedCta: string;
-  brandName: string | null;
-  instagramHandle: string | null;
-  websiteUrl: string | null;
-  colors: string[];
-}
 
 interface PosterGeneratorFormProps {
   caption: string;
@@ -40,7 +32,7 @@ interface PosterGeneratorFormProps {
   brandColors: string[];
   onGenerating?: () => void;
   onGenerateFailed?: (error: string) => void;
-  onGenerated: (data: GeneratedPosterData) => void;
+  onGenerated: (data: ComposedPosterResult) => void;
 }
 
 type PersonState = {
@@ -148,7 +140,8 @@ export function PosterGeneratorForm({
 
   async function handleGenerate() {
     setError(null);
-    setIsGenerating(true);    onGenerating?.();
+    setIsGenerating(true);
+    onGenerating?.();
 
     try {
       const brief =
@@ -156,24 +149,21 @@ export function PosterGeneratorForm({
         mainMessage.trim() ||
         "Professional marketing poster for this brand.";
 
-      const cleanedDetails: Record<string, string> = Object.fromEntries(
-        Object.entries(details).filter(([, v]) => v.trim() !== ""),
-      );
+      const logoBase64 = logoFile
+        ? await fileToBase64(logoFile)
+        : undefined;
 
-      if (additionalInfo.trim()) {
-        cleanedDetails.extra = additionalInfo.trim();
-      }
-
-      const logoBase64 = logoFile ? await fileToBase64(logoFile) : undefined;
       const mainImageBase64 = mainImageFile
         ? await fileToBase64(mainImageFile)
         : undefined;
 
       const peoplePayload = [];
+
       for (const person of people) {
         if (!person.name.trim() && !person.role.trim() && !person.file) {
           continue;
         }
+
         peoplePayload.push({
           name: person.name.trim() || undefined,
           role: person.role.trim() || undefined,
@@ -185,11 +175,8 @@ export function PosterGeneratorForm({
 
       const result = await generateComposedPoster({
         caption: brief,
-
         logoImage: logoBase64 ?? null,
-
         mainImage: mainImageBase64 ?? null,
-
         details: {
           offer: details.offer,
           price: details.price,
@@ -198,77 +185,87 @@ export function PosterGeneratorForm({
           address: details.address,
           phone: details.phone,
           website: details.website,
-          extra: details.extra,
+          extra: additionalInfo.trim() || details.extra,
         },
       });
-
-
 
       onGenerated(result);
     } catch (error) {
       console.error(error);
 
-      setError(
+      const message =
         error instanceof Error
           ? error.message
-          : "Failed to generate poster"
-      );
+          : "Failed to generate poster";
+
+      setError(message);
+      onGenerateFailed?.(message);
+    } finally {
+      setIsGenerating(false);
     }
-
-    return (
-      <div className="space-y-6">
-        {brandColors.length > 0 && (
-          <div>
-            <p className="text-xs text-muted-foreground">Using your brand colors</p>
-            <div className="mt-2 flex gap-2">
-              {brandColors.map((hex) => (
-                <div
-                  key={hex}
-                  className="h-6 w-6 rounded-full border border-border"
-                  style={{ backgroundColor: hex }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        <PosterDetailForm
-          details={details}
-          onChange={updateDetail}
-          posterType={posterType}
-          onPosterTypeChange={setPosterType}
-          goal={goal}
-          onGoalChange={setGoal}
-          mainMessage={mainMessage}
-          onMainMessageChange={setMainMessage}
-          additionalInfo={additionalInfo}
-          onAdditionalInfoChange={setAdditionalInfo}
-          logoName={logoFile?.name}
-          imageName={mainImageFile?.name}
-          onLogo={setLogoFile}
-          onImage={setMainImageFile}
-          people={people.map((p) => ({
-            id: p.id,
-            name: p.name,
-            role: p.role,
-            fileName: p.file?.name ?? null,
-          }))}
-          onPersonChange={onPersonChange}
-          onPersonPhoto={onPersonPhoto}
-          onAddPerson={addPerson}
-          onRemovePerson={removePerson}
-        />
-
-        {error && <p className="text-sm text-red-500">{error}</p>}
-
-        <Button
-          className="w-full"
-          onClick={handleGenerate}
-          disabled={isGenerating}
-        >
-          {isGenerating ? "Creating poster..." : "Create poster"}
-        </Button>
-      </div>
-    );
   }
+
+  return (
+    <div className="space-y-6">
+      {brandColors.length > 0 && (
+        <div>
+          <p className="text-xs text-muted-foreground">
+            Using your brand colors
+          </p>
+
+          <div className="mt-2 flex gap-2">
+            {brandColors.map((hex) => (
+              <div
+                key={hex}
+                className="h-6 w-6 rounded-full border border-border"
+                style={{ backgroundColor: hex }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <PosterDetailForm
+        details={details}
+        onChange={updateDetail}
+        posterType={posterType}
+        onPosterTypeChange={setPosterType}
+        goal={goal}
+        onGoalChange={setGoal}
+        mainMessage={mainMessage}
+        onMainMessageChange={setMainMessage}
+        additionalInfo={additionalInfo}
+        onAdditionalInfoChange={setAdditionalInfo}
+        logoName={logoFile?.name}
+        imageName={mainImageFile?.name}
+        onLogo={setLogoFile}
+        onImage={setMainImageFile}
+        people={people.map((p) => ({
+          id: p.id,
+          name: p.name,
+          role: p.role,
+          fileName: p.file?.name ?? null,
+        }))}
+        onPersonChange={onPersonChange}
+        onPersonPhoto={onPersonPhoto}
+        onAddPerson={addPerson}
+        onRemovePerson={removePerson}
+      />
+
+      {error && (
+        <p className="text-sm text-red-500">
+          {error}
+        </p>
+      )}
+
+      <Button
+        className="w-full"
+        onClick={handleGenerate}
+        disabled={isGenerating}
+      >
+        {isGenerating ? "Creating poster..." : "Create poster"}
+      </Button>
+    </div>
+  );
+
 }
