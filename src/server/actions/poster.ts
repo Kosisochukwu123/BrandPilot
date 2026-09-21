@@ -13,7 +13,9 @@ import { logActivity } from "@/server/services/activity-log";
 import { logger } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 
-import { planReferencePoster } from "@/server/services/ai/reference-poster-director";
+// import { POSTER_TEMPLATES } from "@/lib/constants/poster-templates";
+
+// import { planReferencePoster } from "@/server/services/ai/reference-poster-director";
 
 import { pickReferences } from "@/lib/poster/reference-library";
 
@@ -963,10 +965,30 @@ export async function generateComposedPoster(input: {
     throw new Error("Brand not found");
   }
 
-  const template = await choosePosterTemplate({
+  // const template = await choosePosterTemplate({
+  //   caption: input.caption,
+  //   brand,
+  // });
+
+  // const content = await compilePosterContent(
+  //   input.caption,
+  //   brand,
+  //   report,
+  //   PosterTextMode.OVERLAY,
+  //   template,
+  // );
+
+  const selectedTemplate = await choosePosterTemplate({
     caption: input.caption,
     brand,
   });
+
+  // TEMPORARY:
+  // Only product-spotlight has been upgraded to the new blueprint system.
+  // Force it while we test the compositor end-to-end.
+  const template =
+    POSTER_TEMPLATES.find((item) => item.id === "product-spotlight") ??
+    selectedTemplate;
 
   const content = await compilePosterContent(
     input.caption,
