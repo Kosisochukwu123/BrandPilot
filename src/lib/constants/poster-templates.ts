@@ -279,6 +279,149 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
       headlineScale: "lg",
       headlineWeight: "bold",
     },
+
+    blueprint: {
+      version: 1,
+      aspectRatio: "4:5",
+      templateId: "saas-clean",
+      composition: "service-promo",
+
+      elements: [
+        {
+          id: "service-accent-top",
+          type: "decorative-shape",
+          position: {
+            x: 0.72,
+            y: -0.05,
+            w: 0.34,
+            h: 0.34,
+          },
+          opacity: 0.14,
+          style: {
+            shape: "circle",
+          },
+        },
+
+        {
+          id: "service-eyebrow",
+          type: "badge",
+          position: {
+            x: 0.08,
+            y: 0.1,
+            w: 0.3,
+            h: 0.05,
+          },
+          value: "DIGITAL EXPERIENCE",
+          style: {
+            fontSize: "xs",
+            fontWeight: "bold",
+            shape: "pill",
+            padding: 6,
+          },
+        },
+
+        {
+          id: "service-headline",
+          type: "headline",
+          source: "content.headline",
+          position: {
+            x: 0.08,
+            y: 0.19,
+            w: 0.78,
+            h: 0.19,
+          },
+          style: {
+            fontSize: "hero",
+            fontWeight: "black",
+            fontFamily: "bold-sans",
+          },
+        },
+
+        {
+          id: "service-subheadline",
+          type: "subheadline",
+          source: "content.subheadline",
+          position: {
+            x: 0.08,
+            y: 0.42,
+            w: 0.66,
+            h: 0.1,
+          },
+          style: {
+            fontSize: "md",
+            fontWeight: "medium",
+            fontFamily: "modern",
+          },
+        },
+
+        {
+          id: "service-visual-panel",
+          type: "decorative-shape",
+          position: {
+            x: 0.48,
+            y: 0.57,
+            w: 0.44,
+            h: 0.25,
+          },
+          opacity: 0.12,
+          style: {
+            shape: "rectangle",
+            borderRadius: 18,
+          },
+        },
+
+        {
+          id: "service-cta",
+          type: "cta",
+          source: "content.cta",
+          position: {
+            x: 0.08,
+            y: 0.65,
+            w: 0.32,
+            h: 0.075,
+          },
+          align: "center",
+          style: {
+            fontSize: "sm",
+            fontWeight: "bold",
+            shape: "pill",
+            borderRadius: 999,
+            padding: 10,
+          },
+        },
+
+        {
+          id: "service-website",
+          type: "website",
+          source: "details.website",
+          position: {
+            x: 0.08,
+            y: 0.88,
+            w: 0.45,
+            h: 0.04,
+          },
+          style: {
+            fontSize: "xs",
+            fontWeight: "medium",
+          },
+        },
+
+        {
+          id: "service-bottom-line",
+          type: "decorative-shape",
+          position: {
+            x: 0.08,
+            y: 0.94,
+            w: 0.84,
+            h: 0.006,
+          },
+          style: {
+            shape: "line",
+          },
+        },
+      ],
+    },
+
     button: { style: "pill", size: "md" },
     spacing: { padding: 56, gap: 24 },
     decoration: {

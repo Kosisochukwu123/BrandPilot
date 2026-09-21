@@ -973,17 +973,17 @@ export async function generateComposedPoster(input: {
   }
 
   const composition = choosePosterComposition({
-  caption: input.caption,
+    caption: input.caption,
 
-  assets: {
-    logoImage: input.logoImage,
-    productImage: input.mainImage,
-  },
+    assets: {
+      logoImage: input.logoImage,
+      productImage: input.mainImage,
+    },
 
-  details: input.details ?? {},
-});
+    details: input.details ?? {},
+  });
 
-console.log("POSTER COMPOSITION:", composition);
+  console.log("POSTER COMPOSITION:", composition);
 
   // const template = await choosePosterTemplate({
   //   caption: input.caption,
@@ -1003,12 +1003,27 @@ console.log("POSTER COMPOSITION:", composition);
     brand,
   });
 
-  // TEMPORARY:
-  // Only product-spotlight has been upgraded to the new blueprint system.
-  // Force it while we test the compositor end-to-end.
+  const compositionTemplateIds: Record<typeof composition.type, string[]> = {
+    "service-promo": ["saas-clean", "graphic-split", "tech-grid"],
+
+    "product-promo": ["product-spotlight", "photo-hero", "graphic-bold"],
+
+    "offer-promo": ["sale-burst", "graphic-offer", "product-spotlight"],
+
+    event: ["event-impact", "centered-badge", "photo-caption"],
+
+    "person-led": ["photo-hero", "editorial", "magazine-cover"],
+
+    editorial: ["editorial", "minimal-luxury", "graphic-type"],
+  };
+
+  const preferredTemplateIds = compositionTemplateIds[composition.type];
+
   const template =
-    POSTER_TEMPLATES.find((item) => item.id === "product-spotlight") ??
-    selectedTemplate;
+    POSTER_TEMPLATES.find(
+      (item) =>
+        preferredTemplateIds.includes(item.id) && Boolean(item.blueprint),
+    ) ?? selectedTemplate;
 
   const content = await compilePosterContent(
     input.caption,
