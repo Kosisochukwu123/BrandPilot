@@ -109,46 +109,45 @@ export function adaptPosterBlueprint(
 
   if (isContentOnly) {
     elements = availableElements.map((element) => {
-      if (element.type === "headline") {
-        return {
-          ...element,
-          position: {
-            x: 7,
-            y: 20,
-            w: 86,
-            h: 22,
-          },
-          style: {
-            ...element.style,
-            fontSize: "hero" as const,
-          },
-        };
-      }
+     if (element.type === "headline") {
+  return {
+    ...element,
+    position: {
+      x: 0.07,
+      y: 0.20,
+      w: 0.86,
+      h: 0.22,
+    },
+    style: {
+      ...element.style,
+      fontSize: "hero" as const,
+    },
+  };
+}
 
-      if (element.type === "subheadline") {
-        return {
-          ...element,
-          position: {
-            x: 8,
-            y: 45,
-            w: 72,
-            h: 12,
-          },
-        };
-      }
+    if (element.type === "subheadline") {
+  return {
+    ...element,
+    position: {
+      x: 0.08,
+      y: 0.45,
+      w: 0.72,
+      h: 0.12,
+    },
+  };
+}
 
-      if (element.type === "cta") {
-        return {
-          ...element,
-          position: {
-            x: 8,
-            y: 68,
-            w: 38,
-            h: 9,
-          },
-        };
-      }
-
+    if (element.type === "cta") {
+  return {
+    ...element,
+    position: {
+      x: 0.08,
+      y: 0.68,
+      w: 0.38,
+      h: 0.09,
+    },
+  };
+}
       return element;
     });
   }
