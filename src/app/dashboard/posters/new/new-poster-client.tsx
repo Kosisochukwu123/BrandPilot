@@ -226,6 +226,7 @@ export default function NewPosterClient() {
                     onHeadlineChange={setHeadline}
                     onSubheadlineChange={setSubheadline}
                     onCtaChange={setCta}
+                    blueprint={generatedPoster.blueprint}
                     design={generatedPoster.design}
                   />
                 </div>

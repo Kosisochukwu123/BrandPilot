@@ -30,6 +30,9 @@ import { generatePosterFromReferences } from "@/server/services/ai/image-generat
 import { loadReferenceImages } from "@/server/services/ai/load-reference-images";
 // import { uploadBase64Image } from "@/server/services/cloudinary";
 
+import type { PosterDesignBlueprint } from "@/lib/types/poster-design-blueprint";
+import { adaptPosterBlueprint } from "@/server/services/poster/adapt-poster-blueprint";
+
 import {
   findBestBackground,
   seedLibraryFromGeneration,
@@ -69,6 +72,8 @@ export interface ComposedPosterResult {
   subheadline: string;
   bullets: string[];
   cta: string;
+
+  blueprint: PosterDesignBlueprint | null;
 
   suggestedCta: string;
   brandName: string | null;
@@ -998,6 +1003,26 @@ export async function generateComposedPoster(input: {
     template,
   );
 
+  const adaptedBlueprint = template.blueprint
+    ? adaptPosterBlueprint({
+        blueprint: template.blueprint,
+
+        assets: {
+          logoImage: input.logoImage,
+          productImage: input.mainImage,
+        },
+
+        details: input.details ?? {},
+
+        content: {
+          headline: content.headline,
+          subheadline: content.subheadline,
+          bullets: content.bullets,
+          cta: content.ctaSuggestion,
+        },
+      })
+    : null;
+
   let backgroundUrl: string | null = null;
 
   const existingBackground = await findBestBackground(brand);
@@ -1105,6 +1130,8 @@ export async function generateComposedPoster(input: {
     templateId: template.id,
 
     backgroundUrl,
+
+    blueprint: adaptedBlueprint,
 
     headline: content.headline,
 

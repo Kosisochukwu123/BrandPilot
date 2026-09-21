@@ -19,6 +19,8 @@ import {
   spacingMoodMultiplier,
 } from "@/lib/constants/design-tokens";
 import type { PosterTemplate } from "@/lib/constants/poster-templates";
+import type { PosterDesignBlueprint } from "@/lib/types/poster-design-blueprint";
+
 
 interface DesignDecisions {
   visualStyle?: string;
@@ -48,6 +50,8 @@ interface PosterTemplateRendererProps {
 
   logoUrl?: string | null;
   productUrl?: string | null;
+
+  blueprint?: PosterDesignBlueprint | null;
 
   details?: {
     offer?: string;
@@ -124,7 +128,8 @@ function resolveBlueprintSource(
 }
 
 function BlueprintRenderer({
-  template,
+  blueprint,
+  // template,
   backgroundUrl,
   brandColors,
   brandName,
@@ -140,7 +145,8 @@ function BlueprintRenderer({
   onSubheadlineChange,
   onCtaChange,
 }: {
-  template: PosterTemplate;
+  // template: PosterTemplate;
+   blueprint: PosterDesignBlueprint;
   backgroundUrl: string | null;
   brandColors: string[];
   brandName: string | null;
@@ -167,11 +173,7 @@ function BlueprintRenderer({
   onSubheadlineChange: (value: string) => void;
   onCtaChange: (value: string) => void;
 }) {
-  const blueprint = template.blueprint;
 
-  if (!blueprint) {
-    return null;
-  }
 
   const primary = brandColors[0] ?? "#1E293B";
   const secondary = brandColors[1] ?? "#F59E0B";
@@ -488,6 +490,7 @@ function BlueprintRenderer({
 
 export function PosterTemplateRenderer({
   template,
+  blueprint,
   backgroundUrl,
   brandColors,
   brandName,
@@ -508,12 +511,13 @@ export function PosterTemplateRenderer({
 }: PosterTemplateRendererProps) {
   const primary = brandColors[0] ?? "#1E293B";
   const secondary = brandColors[1] ?? "#F59E0B";
-  const blueprint = template.blueprint;
+
+  const activeBlueprint = blueprint ?? template.blueprint;
 
   const aspectRatioClass =
-    blueprint?.aspectRatio === "4:5"
+    activeBlueprint?.aspectRatio === "4:5"
       ? "aspect-[4/5]"
-      : blueprint?.aspectRatio === "16:9"
+      : activeBlueprint?.aspectRatio === "16:9"
         ? "aspect-video"
         : "aspect-square";
 
@@ -587,11 +591,12 @@ export function PosterTemplateRenderer({
       className={`relative ${aspectRatioClass} w-full overflow-hidden border border-border`}
       style={{ ...backgroundStyle, borderRadius: template.decoration.cornerRadius }}
     >
-      {blueprint ? (
+      {activeBlueprint ? (
         <BlueprintRenderer
-          template={template}
+          // template={template}
           backgroundUrl={backgroundUrl}
           brandColors={brandColors}
+          blueprint={activeBlueprint}
           brandName={brandName}
           headline={headline}
           subheadline={subheadline}
