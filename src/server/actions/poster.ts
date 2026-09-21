@@ -15,9 +15,9 @@ import { revalidatePath } from "next/cache";
 
 // import { POSTER_TEMPLATES } from "@/lib/constants/poster-templates";
 
-// import { planReferencePoster } from "@/server/services/ai/reference-poster-director";
+import { planReferencePoster } from "@/server/services/ai/reference-poster-director";
 
-import { pickReferences } from "@/lib/poster/reference-library";
+// import { pickReferences } from "@/lib/poster/reference-library";
 
 import { findReferencePosters } from "@/server/services/asset-matcher";
 import { loadReferenceImagesFromUrls } from "@/server/services/ai/load-reference-images";
